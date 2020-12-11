@@ -1,0 +1,22 @@
+syntax = "proto3";
+option objc_class_prefix = "mh";
+
+package protos;
+
+message Head {
+  fixed32 version = 1;
+  fixed32 cmd  = 2;
+  uint64  len = 3;
+  uint32  encry = 4;
+  fixed32 ext1 = 5;
+  fixed32 ext2 = 6;
+}
+
+message Body {
+  uint64 bodylen = 1;
+  string data = 2;
+}
+message Msg {
+  Head head = 1;
+  Body body = 2;
+}
