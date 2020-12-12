@@ -1,14 +1,12 @@
 package main
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
-	"m1/protos"
+	"github.com/golang/protobuf/proto"
+	pb "m1/protos"
 	"net"
-)
-
-const (
-	login  = 0x001
-	logout = 0x002
 )
 
 func main() {
@@ -17,25 +15,28 @@ func main() {
 		fmt.Errorf("%s\n", err.Error())
 		return
 	}
+	msg := &pb.AskLogin{
+		Msgid: 1,
+		Platform: 1,
+		Uin: "1",
+		Sessionid: "1001",
+	}
 
-	head := &protos.Head{
-		Version: 1,
-		Cmd: login,
-		Len: 0,
-		Encry: 0,
-		Ext1: 0,
-		Ext2: 0,
+	msgbyte,err := proto.Marshal(msg)
+	if err != nil {
+		fmt.Errorf("msg Marshal error %s\n", err.Error())
+		return
 	}
-	body := &protos.Body{
-		Bodylen: 10,
-		Data: "hello world",
-	}
-	msg :=  protos.Msg{
-		Head: head,
-		Body: body,
-	}
-	msg.Head.Len = uint64(len([]byte(msg.String())))
-	fmt.Printf("len: %d, msg: %s\n", msg.Head.Len, msg.String())
-	conn.Write([]byte(msg.String()))
+
+	buf := &bytes.Buffer{}
+	var head []byte
+	head = make([]byte, 8)
+	binary.BigEndian.PutUint32(head[0:4], uint32(bytes.Count(msgbyte,nil) -1))
+	binary.BigEndian.PutUint32(head[4:8], uint32(pb.MsgID_eMsgToLSFromGC_AskLogin))
+	buf.Write(head[:8])
+	buf.Write(msgbyte)
+	fmt.Printf("%v\n", string(buf.Bytes()))
+
+	conn.Write(buf.Bytes())
 	defer conn.Close()
 }
