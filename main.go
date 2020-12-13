@@ -2,23 +2,20 @@ package main
 
 import (
 	"fmt"
-	"m1/server"
+	"m1/net"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
-
 func main() {
-	s := server.NewServer()
+	s := net.NewServer()
 	go s.Accept()
-
-	errs := make(chan error)
 
 	go func() {
 		os := make(chan os.Signal)
 		signal.Notify(os, syscall.SIGINT)
-		errs <- fmt.Errorf("%s\n", <-os)
+		s.Errs <- fmt.Errorf("%s\n", <-os)
 	}()
-	fmt.Errorf("%s\n", <- s.Errs)
+	fmt.Errorf("%s\n", <-s.Errs)
 }
