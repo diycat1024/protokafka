@@ -6,13 +6,15 @@ import (
 
 type server struct {
 	Errs    chan error
-	Clients map[string]*Client
+	Clients map[string]*ConnCtx
+	Login   chan ConnCtx
 }
 
 func NewServer() *server {
 	return &server{
 		Errs:    make(chan error),
-		Clients: make(map[string]*Client),
+		Clients: make(map[string]*ConnCtx),
+		Login: make(chan ConnCtx, 1),
 	}
 }
 
@@ -22,13 +24,12 @@ func (s *server) Accept() {
 	if err != nil {
 		s.Errs <- err
 	}
-
-	go func() {
+	for {
 		conn, err := l.Accept()
 		if err != nil {
 			s.Errs <- err
 		}
-		client := NewClient(conn)
-		go client.doServerStuf()
-	}()
+		connctx := NewConnCtx(conn)
+		go connctx.ParseData()
+	}
 }

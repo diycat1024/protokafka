@@ -11,19 +11,20 @@ import (
 	"net"
 )
 
-type Client struct {
+type ConnCtx struct {
 	ClientConn net.Conn
 	Scanner    *bufio.Scanner
+	Server     *server
 }
 
-func NewClient(c net.Conn) *Client {
-	return &Client{
+func NewConnCtx(c net.Conn) *ConnCtx {
+	return &ConnCtx{
 		ClientConn: c,
 		Scanner:    bufio.NewScanner(c),
 	}
 }
 
-func (c *Client) doServerStuf() {
+func (c *ConnCtx) ParseData() {
 	defer c.ClientConn.Close()
 	for {
 		c.Scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
@@ -36,7 +37,7 @@ func (c *Client) doServerStuf() {
 					}
 					fmt.Printf("len_data %d; length: %d\n", len(data), length)
 					if int(length)+comm.HeadLen <= len(data) {
-						return int(length), data[comm.HeadLen : int(length)+comm.HeadLen], nil
+						return int(length) + comm.HeadLen , data[: int(length)+ comm.HeadLen], nil
 					}
 				}
 			}
@@ -45,16 +46,25 @@ func (c *Client) doServerStuf() {
 
 		for c.Scanner.Scan() {
 			fmt.Println("scanner msg: ", string(c.Scanner.Bytes()))
-			msg := &pb.AskLogin{}
-			s := bytes.Buffer{}
-			s.Write(c.Scanner.Bytes())
-			s.Write([]byte("  "))
-			err := proto.Unmarshal(s.Bytes(), msg)
-			if err != nil {
-				fmt.Printf("proto Unmarshal err: %s\n", err.Error())
-				return
+			length := binary.BigEndian.Uint32(c.Scanner.Bytes()[0:4])
+			cmd := binary.BigEndian.Uint32(c.Scanner.Bytes()[4:comm.HeadLen])
+			switch pb.MsgID(cmd) {
+			case pb.MsgID_eMsgToLSFromGC_AskLogin:
+				msg := &pb.AskLogin{}
+				err := proto.Unmarshal(c.Scanner.Bytes()[comm.HeadLen:int(length) + comm.HeadLen], msg)
+				if err != nil {
+					fmt.Printf("proto Unmarshal err: %s\n", err.Error())
+					return
+				}
+				fmt.Printf("msg.msgid: %d, msg.session: %s", msg.Msgid, msg.Sessionid)
+
+				//todo 登录成功
+
+
+			default:
+				fmt.Println("unknow  !!!")
 			}
-			fmt.Printf("msg.msgid: %d, msg.session: %s", msg.Msgid, msg.Sessionid)
+
 		}
 
 		if err := c.Scanner.Err(); err != nil {
