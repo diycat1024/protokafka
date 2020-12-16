@@ -1,9 +1,9 @@
 package aio
 
 import (
-	"fmt"
 	"github.com/golang/protobuf/proto"
 	"github.com/google/uuid"
+	"m1/logger"
 	pb "m1/protos"
 	"net"
 	"sync"
@@ -30,7 +30,7 @@ type server struct {
 func NewServer() *server {
 	server := &server{
 		Errs:       make(chan error),
-		Clients:     &sync.Map{},
+		Clients:    &sync.Map{},
 		ClientJoin: make(chan net.Conn),
 		ClientQuit: make(chan *Client),
 		InputMsg:   make(chan InReqMsg),
@@ -85,10 +85,10 @@ func (s *server) DelClient(key string) {
 }
 
 func (s *server) RecvHandler(msg InReqMsg) {
-	fmt.Println("a msg recv")
+	logger.Logger.Debug("a msg recv")
 	h, b := LoginHandlerMap.Load(msg.Cmd)
 	if !b {
-		fmt.Printf("msg.cmd %d not register\n", msg.Cmd)
+		logger.Logger.Errorf("msg.cmd %d not register\n", msg.Cmd)
 		return
 	}
 	handler := *h.(*LogicHandler)
@@ -96,7 +96,7 @@ func (s *server) RecvHandler(msg InReqMsg) {
 }
 
 func (s *server) JoinHandler(conn net.Conn) {
-	fmt.Println("a conn add")
+	logger.Logger.Info("a conn add")
 	key := uuid.New()
 	client := NewClient(key, conn)
 	s.AddClient(client)
@@ -117,6 +117,6 @@ func (s *server) JoinHandler(conn net.Conn) {
 }
 
 func (s *server) QuitHandler(conn *Client) {
-	fmt.Println("a client quit")
-
+	logger.Logger.Debug("a client quit")
+	s.Clients.Delete(conn.Key)
 }

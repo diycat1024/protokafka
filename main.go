@@ -3,12 +3,15 @@ package main
 import (
 	"fmt"
 	"m1/aio"
+	"m1/logger"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
 func main() {
+	logger.InitLogger()
+	defer logger.Logger.Sync()
 	s := aio.NewServer()
 
 	go func() {

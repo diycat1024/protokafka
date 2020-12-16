@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	comm "m1/common"
+	"m1/logger"
 	"net"
 )
 
@@ -61,7 +62,7 @@ func (c *Client) read() {
 				if length <= 0 {
 					return 0, nil, fmt.Errorf("length is 0")
 				}
-				fmt.Printf("len_data %d; length: %d\n", len(data), length)
+				logger.Logger.Info("len_data %d; length: %d\n", len(data), length)
 				if int(length)+comm.HeadLen <= len(data) {
 					return int(length) + comm.HeadLen, data[:int(length)+comm.HeadLen], nil
 				}
@@ -72,7 +73,7 @@ func (c *Client) read() {
 		for c.scanner.Scan() {
 			req, err := DecodeInReqMsg(c.scanner.Bytes())
 			if err != nil {
-				fmt.Println("cmd err!!")
+				logger.Logger.Error("cmd err!!")
 			} else {
 				req.Client = c
 				c.Input <- *req
@@ -80,7 +81,7 @@ func (c *Client) read() {
 		}
 
 		if err := c.scanner.Err(); err != nil {
-			fmt.Println("无数据包！")
+			logger.Logger.Error("无数据包！")
 			c.Quiting()
 			return
 		}
@@ -90,12 +91,12 @@ func (c *Client) read() {
 func (c *Client) write() {
 	for resp := range c.OutPut {
 		if _, err := c.writer.Write(resp.Decode()); err != nil {
-			fmt.Printf("write error %s\n", err.Error())
+			logger.Logger.Errorf("write error %s\n", err.Error())
 			c.Quiting()
 			return
 		}
 		if err := c.writer.Flush(); err != nil {
-			fmt.Printf("Write error: %s\n", err)
+			logger.Logger.Errorf("Write error: %s\n", err)
 			c.Quiting()
 			return
 		}

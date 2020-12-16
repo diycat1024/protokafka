@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/golang/protobuf/proto"
+	"m1/logger"
 	pb "m1/protos"
 	"net"
 )
@@ -23,7 +24,7 @@ func main() {
 
 	msgbyte, err := proto.Marshal(msg)
 	if err != nil {
-		fmt.Errorf("msg Marshal error %s\n", err.Error())
+		logger.Logger.Errorf("msg Marshal error %s\n", err.Error())
 		return
 	}
 

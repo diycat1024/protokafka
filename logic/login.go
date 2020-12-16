@@ -1,9 +1,9 @@
 package logic
 
 import (
-	"fmt"
 	"github.com/golang/protobuf/proto"
 	"m1/aio"
+	"m1/logger"
 	pb "m1/protos"
 	"time"
 )
@@ -18,15 +18,15 @@ type Login struct {
 }
 
 type LoginLogic struct {
-	UserLoginInfo  *Login
-	Client     *aio.Client
+	UserLoginInfo *Login
+	Client        *aio.Client
 }
 
-func init()  {
+func init() {
 	aio.LoginHandlerMap.Store(pb.Cmd_eMsgToLSFromGC_AskLogin, NewLoginLogic)
 }
 
-func NewLoginLogic()*LoginLogic{
+func NewLoginLogic() *LoginLogic {
 	return &LoginLogic{
 		UserLoginInfo: nil,
 		Client:        nil,
@@ -36,7 +36,7 @@ func NewLoginLogic()*LoginLogic{
 func (l *LoginLogic) HandlerCommon(msg *aio.InReqMsg) {
 	m := &pb.AskLogin{}
 	if err := proto.Unmarshal(msg.Data, m); err != nil {
-		fmt.Printf("parse error %s", err.Error())
+		logger.Logger.Errorf("parse error %s", err.Error())
 		l.HandlerError(msg.Cmd, "login  error")
 		return
 	}
@@ -50,15 +50,15 @@ func (l *LoginLogic) HandlerCommon(msg *aio.InReqMsg) {
 	}
 	m1 := proto.Message(loginResult)
 	out := &aio.OutResMsg{
-		Code:   "0",
-		Cmd:    msg.Cmd,
-		Data:   &m1,
+		Code: "0",
+		Cmd:  msg.Cmd,
+		Data: &m1,
 	}
 	l.HandlerResponse(out)
 
 }
 
-func (l *LoginLogic) HandlerError(cmd pb.Cmd, data string)  {
+func (l *LoginLogic) HandlerError(cmd pb.Cmd, data string) {
 	loginResult := &pb.LoginResult{
 		Cmd:  cmd,
 		Code: "-1",
@@ -67,13 +67,13 @@ func (l *LoginLogic) HandlerError(cmd pb.Cmd, data string)  {
 	}
 	m1 := proto.Message(loginResult)
 	out := &aio.OutResMsg{
-		Code:   "0",
-		Cmd:    cmd,
-		Data:   &m1,
+		Code: "0",
+		Cmd:  cmd,
+		Data: &m1,
 	}
 	l.Client.PutOut(out)
 }
 
-func (l *LoginLogic) HandlerResponse(msg *aio.OutResMsg )  {
+func (l *LoginLogic) HandlerResponse(msg *aio.OutResMsg) {
 	l.Client.PutOut(msg)
 }
