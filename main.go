@@ -10,7 +10,6 @@ import (
 
 func main() {
 	s := net.NewServer()
-	go s.Accept()
 
 	go func() {
 		os := make(chan os.Signal)

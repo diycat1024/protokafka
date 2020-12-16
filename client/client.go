@@ -10,19 +10,19 @@ import (
 )
 
 func main() {
-	conn, err := net.Dial("tcp","127.0.0.1:9091")
+	conn, err := net.Dial("tcp", "127.0.0.1:9091")
 	if err != nil {
 		fmt.Errorf("%s\n", err.Error())
 		return
 	}
 	msg := &pb.AskLogin{
-		Msgid: 1,
-		Platform: 1,
-		Uin: "1",
-		Sessionid: "1001",
+		Cmd:  1,
+		Plat: 1,
+		Uin:  "1",
+		Sid:  "1001",
 	}
 
-	msgbyte,err := proto.Marshal(msg)
+	msgbyte, err := proto.Marshal(msg)
 	if err != nil {
 		fmt.Errorf("msg Marshal error %s\n", err.Error())
 		return
@@ -31,8 +31,8 @@ func main() {
 	buf := &bytes.Buffer{}
 	var head []byte
 	head = make([]byte, 8)
-	binary.BigEndian.PutUint32(head[0:4], uint32(bytes.Count(msgbyte,nil) -1))
-	binary.BigEndian.PutUint32(head[4:8], uint32(pb.MsgID_eMsgToLSFromGC_AskLogin))
+	binary.BigEndian.PutUint32(head[0:4], uint32(bytes.Count(msgbyte, nil)-1))
+	binary.BigEndian.PutUint32(head[4:8], uint32(pb.Cmd_eMsgToLSFromGC_AskLogin))
 	buf.Write(head[:8])
 	buf.Write(msgbyte)
 	fmt.Printf("%v\n", string(buf.Bytes()))

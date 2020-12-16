@@ -3,18 +3,51 @@ option go_package = ".;GCToLs";
 
 package GCToLS;
 
-enum MsgID
+enum Cmd
 {
-  eMsgToLSFromGC_Unknow = 0;
-  eMsgToLSFromGC_Begin = 40960;
-  eMsgToLSFromGC_AskLogin = 40961;
-  eMsgToLSFromGC_End = 40970;
+  eMsgToLSFromGC_Unknow = 0x000;
+  //登录相关
+  eMsgToLSFromGC_AskLogin = 0x001;
+
+
+  // 消息相关
+  eMsgToLSFromGC_SendMsg = 0x0A0;
+  eMsgToLSFromGC_ReadMsg = 0x0A1;
+
+  //消息通知相关
+  eMsgToGCFromLS_NetMsg = 0x0D0;
 }
 
 message AskLogin
 {
-  MsgID msgid = 1;
-  uint32 platform = 2;
-  string uin = 3;
-  string sessionid = 4;
+  Cmd cmd = 1;
+  string plat = 2;
+  string uid = 4;
 }
+
+message SendMsg
+{
+  Cmd cmd = 1;
+  string send = 2;
+  string recv = 3;
+  string plat = 4;
+  string data = 5;
+}
+
+message NetMsg
+{
+  Cmd cmd = 1;
+  string send = 2;
+  string recv = 3;
+  string plat = 4;
+  string mid = 5;
+}
+
+message ReadMsg
+{
+  Cmd cmd = 1;
+  string send = 2;
+  string recv = 3;
+  string mid = 4;
+}
+
