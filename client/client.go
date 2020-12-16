@@ -16,10 +16,9 @@ func main() {
 		return
 	}
 	msg := &pb.AskLogin{
-		Cmd:  1,
-		Plat: 1,
-		Uin:  "1",
-		Sid:  "1001",
+		Cmd:  pb.Cmd_eMsgToLSFromGC_AskLogin,
+		Plat: "1",
+		Uid:  "1001",
 	}
 
 	msgbyte, err := proto.Marshal(msg)
@@ -38,5 +37,6 @@ func main() {
 	fmt.Printf("%v\n", string(buf.Bytes()))
 
 	conn.Write(buf.Bytes())
+
 	defer conn.Close()
 }

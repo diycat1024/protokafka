@@ -1,12 +1,21 @@
-package net
+package aio
 
 import (
 	"fmt"
+	"github.com/golang/protobuf/proto"
 	"github.com/google/uuid"
 	pb "m1/protos"
 	"net"
 	"sync"
 )
+
+type LogicHandler interface {
+	HandlerCommon(msg *InReqMsg)
+	HandlerError(cmd pb.Cmd, msg *proto.Message)
+	HandlerResponse(cmd pb.Cmd, msg *proto.Message)
+}
+
+var LoginHandlerMap sync.Map
 
 type server struct {
 	Errs    chan error
@@ -21,6 +30,7 @@ type server struct {
 func NewServer() *server {
 	server := &server{
 		Errs:       make(chan error),
+		Clients:     &sync.Map{},
 		ClientJoin: make(chan net.Conn),
 		ClientQuit: make(chan *Client),
 		InputMsg:   make(chan InReqMsg),
@@ -76,7 +86,13 @@ func (s *server) DelClient(key string) {
 
 func (s *server) RecvHandler(msg InReqMsg) {
 	fmt.Println("a msg recv")
-
+	h, b := LoginHandlerMap.Load(msg.Cmd)
+	if !b {
+		fmt.Printf("msg.cmd %d not register\n", msg.Cmd)
+		return
+	}
+	handler := *h.(*LogicHandler)
+	handler.HandlerCommon(&msg)
 }
 
 func (s *server) JoinHandler(conn net.Conn) {

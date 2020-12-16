@@ -22,8 +22,11 @@ message AskLogin
 {
   Cmd cmd = 1;
   string plat = 2;
-  string uid = 4;
+  string uid = 3;
+  string login = 4;
+  string pwd = 5;
 }
+
 
 message SendMsg
 {
@@ -51,3 +54,10 @@ message ReadMsg
   string mid = 4;
 }
 
+//登录返回
+message LoginResult {
+  Cmd cmd = 1;
+  string code = 2;
+  string uid = 3;
+  string data = 4;
+}

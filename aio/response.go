@@ -1,4 +1,4 @@
-package net
+package aio
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 )
 
 type OutResMsg struct {
-	Client *Client        `json:"_"`
+	//Client *Client        `json:"_"`
 	Code   string         `json:"code"`
 	Cmd    pb.Cmd         `json:"cmd"`
 	Data   *proto.Message `json:"data"`

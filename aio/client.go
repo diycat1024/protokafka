@@ -1,4 +1,4 @@
-package net
+package aio
 
 import (
 	"bufio"
@@ -8,17 +8,7 @@ import (
 	"github.com/google/uuid"
 	comm "m1/common"
 	"net"
-	"time"
 )
-
-type Login struct {
-	Id      string    `json:"id"`       // id
-	UserId  string    `json:"user_id"`  // 用户ID
-	Token   string    `json:"token"`    // 用户TOKEN
-	LoginAt time.Time `json:"login_at"` // 登录日期
-	LoginIp string    `json:"login_ip"` // 登录IP
-	Plat    string    `json:"platform"` // 登录平台
-}
 
 type Client struct {
 	//连接信息
@@ -30,7 +20,6 @@ type Client struct {
 	OutPut  chan OutResMsg //输出消息
 	Quit    chan *Client   //推出消息
 	//登录信息
-	Login *Login
 }
 
 func NewClient(key uuid.UUID, c net.Conn) *Client {

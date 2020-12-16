@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
-	"m1/net"
+	"m1/aio"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
 func main() {
-	s := net.NewServer()
+	s := aio.NewServer()
 
 	go func() {
 		os := make(chan os.Signal)
