@@ -23,13 +23,14 @@ type LoginLogic struct {
 }
 
 func init() {
-	aio.LoginHandlerMap.Store(pb.Cmd_eMsgToLSFromGC_AskLogin, NewLoginLogic)
+	l := NewLoginLogic()
+	aio.LoginHandlerMap.Store(pb.Cmd_eMsgToLSFromGC_AskLogin, l)
 }
 
-func NewLoginLogic() *LoginLogic {
-	return &LoginLogic{
-		UserLoginInfo: nil,
-		Client:        nil,
+func NewLoginLogic() LoginLogic {
+	return LoginLogic{
+		UserLoginInfo: new(Login),
+		Client:        new(aio.Client),
 	}
 }
 

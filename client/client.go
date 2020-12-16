@@ -8,6 +8,9 @@ import (
 	"m1/logger"
 	pb "m1/protos"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -40,4 +43,7 @@ func main() {
 	conn.Write(buf.Bytes())
 
 	defer conn.Close()
+	o := make(chan os.Signal)
+	signal.Notify(o, syscall.SIGINT)
+	fmt.Errorf("%s\n", <-o)
 }

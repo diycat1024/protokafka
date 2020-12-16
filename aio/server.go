@@ -28,16 +28,15 @@ type server struct {
 }
 
 func NewServer() *server {
-	server := &server{
+	s := &server{
 		Errs:       make(chan error),
 		Clients:    &sync.Map{},
 		ClientJoin: make(chan net.Conn),
 		ClientQuit: make(chan *Client),
 		InputMsg:   make(chan InReqMsg),
 	}
-	go server.listen()
-	server.start()
-	return server
+	go s.listen()
+	return s
 }
 
 func (s *server) listen() {
@@ -54,8 +53,7 @@ func (s *server) listen() {
 	}
 }
 
-func (s *server) start() {
-
+func (s *server) Start() {
 	l, err := net.Listen("tcp", ":9091")
 	if err != nil {
 		s.Errs <- err
@@ -88,9 +86,10 @@ func (s *server) RecvHandler(msg InReqMsg) {
 	logger.Logger.Debug("a msg recv")
 	h, b := LoginHandlerMap.Load(msg.Cmd)
 	if !b {
-		logger.Logger.Errorf("msg.cmd %d not register\n", msg.Cmd)
+		logger.Logger.Debugf("msg.cmd not register %d \n", msg.Cmd)
 		return
 	}
+	//todo have bug
 	handler := *h.(*LogicHandler)
 	handler.HandlerCommon(&msg)
 }

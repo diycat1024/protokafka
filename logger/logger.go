@@ -4,11 +4,16 @@ import (
 	"github.com/natefinch/lumberjack"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"os"
 )
 
 var Logger *zap.SugaredLogger
 
-func InitLogger() {
+var logInConsole bool = true
+
+// logInConsole 是否同时输出到控制台
+
+func init() {
 	writeSyncer := getLogWriter()
 	encoder := getEncoder()
 	core := zapcore.NewCore(encoder, writeSyncer, zapcore.DebugLevel)
@@ -32,5 +37,9 @@ func getLogWriter() zapcore.WriteSyncer {
 		MaxAge:     30,
 		Compress:   false,
 	}
-	return zapcore.AddSync(lumberJackLogger)
+	if logInConsole {
+		return zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), zapcore.AddSync(lumberJackLogger))
+	} else {
+		return zapcore.AddSync(lumberJackLogger)
+	}
 }

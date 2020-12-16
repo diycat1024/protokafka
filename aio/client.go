@@ -62,7 +62,7 @@ func (c *Client) read() {
 				if length <= 0 {
 					return 0, nil, fmt.Errorf("length is 0")
 				}
-				logger.Logger.Info("len_data %d; length: %d\n", len(data), length)
+				logger.Logger.Infof("len_data %d; length: %d\n", len(data), length)
 				if int(length)+comm.HeadLen <= len(data) {
 					return int(length) + comm.HeadLen, data[:int(length)+comm.HeadLen], nil
 				}
@@ -81,7 +81,7 @@ func (c *Client) read() {
 		}
 
 		if err := c.scanner.Err(); err != nil {
-			logger.Logger.Error("无数据包！")
+			logger.Logger.Errorf("scanner.err: %s\n", err.Error())
 			c.Quiting()
 			return
 		}
