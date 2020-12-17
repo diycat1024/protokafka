@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/golang/protobuf/proto"
 	"github.com/google/uuid"
 	"m1/aio"
 	"m1/logger"
@@ -15,7 +16,25 @@ import (
 )
 
 func RecvMsg(msg *aio.InReqMsg) {
-	logger.Logger.Infof("msg:%s", msg.Data)
+	switch msg.Cmd {
+	case pb.Cmd_eMsgToLSFromGC_SendGroupMsg:
+		m := &pb.SendGroupMsg{}
+		if err := proto.Unmarshal(msg.Data, m); err != nil {
+			logger.Logger.Errorf("%s\n", err.Error())
+			return
+		}
+		fmt.Printf("recv msg: %s\n", m.String())
+	case pb.Cmd_eMsgToLSFromGC_AskLogin:
+		m := &pb.AskLogin{}
+		if err := proto.Unmarshal(msg.Data, m); err != nil {
+			logger.Logger.Errorf("%s\n", err.Error())
+			return
+		}
+		fmt.Printf("recv msg: %s\n", m.String())
+	default:
+		logger.Logger.Debugf("recv a unknown data!!!")
+
+	}
 }
 
 func SendMsg(client *aio.Client) {
@@ -62,7 +81,7 @@ func main() {
 
 	go func() {
 		for {
-			logger.Logger.Infof("-> ")
+			logger.Logger.Debugf("-> ")
 			text, _ := reader.ReadString('\n')
 			// convert CRLF to LF
 			text = strings.Replace(text, "\n", "", -1)
