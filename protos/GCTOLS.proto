@@ -14,6 +14,8 @@ enum Cmd
   eMsgToLSFromGC_SendMsg = 0x0A0;
   eMsgToLSFromGC_ReadMsg = 0x0A1;
 
+  eMsgToLSFromGC_SendGroupMsg = 0x0B2;
+
   //消息通知相关
   eMsgToGCFromLS_NetMsg = 0x0D0;
 }
@@ -29,6 +31,15 @@ message AskLogin
 
 
 message SendMsg
+{
+  Cmd cmd = 1;
+  string send = 2;
+  string recv = 3;
+  string plat = 4;
+  string data = 5;
+}
+
+message SendGroupMsg
 {
   Cmd cmd = 1;
   string send = 2;
@@ -60,4 +71,14 @@ message LoginResult {
   string code = 2;
   string uid = 3;
   string data = 4;
+}
+//发消息返回
+message SendGroupResult
+{
+  Cmd cmd = 1;
+  string code = 2;
+  string recv = 3;
+  string plat = 4;
+  string data = 5;
+  string send = 6;
 }

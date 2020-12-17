@@ -9,9 +9,15 @@ import (
 
 type OutResMsg struct {
 	//Client *Client        `json:"_"`
-	Code   string         `json:"code"`
-	Cmd    pb.Cmd         `json:"cmd"`
-	Data   *proto.Message `json:"data"`
+	Cmd  pb.Cmd         `json:"cmd"`
+	Data *proto.Message `json:"data"`
+}
+
+func NewOutResMsg(cmd pb.Cmd, data proto.Message) *OutResMsg {
+	return &OutResMsg{
+		Cmd:  cmd,
+		Data: &data,
+	}
 }
 
 func (resp *OutResMsg) Decode() []byte {

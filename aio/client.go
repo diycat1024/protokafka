@@ -9,7 +9,17 @@ import (
 	comm "m1/common"
 	"m1/logger"
 	"net"
+	"time"
 )
+
+type Login struct {
+	Id      string    `json:"id"`       // id
+	UserId  string    `json:"user_id"`  // 用户ID
+	Token   string    `json:"token"`    // 用户TOKEN
+	LoginAt time.Time `json:"login_at"` // 登录日期
+	LoginIp string    `json:"login_ip"` // 登录IP
+	Plat    string    `json:"platform"` // 登录平台
+}
 
 type Client struct {
 	//连接信息
@@ -17,10 +27,11 @@ type Client struct {
 	Conn    net.Conn
 	scanner *bufio.Scanner
 	writer  *bufio.Writer
-	Input   chan InReqMsg  //输入消息
-	OutPut  chan OutResMsg //输出消息
-	Quit    chan *Client   //推出消息
+	Input   chan *InReqMsg  //输入消息
+	OutPut  chan *OutResMsg //输出消息
+	Quit    chan *Client    //推出消息
 	//登录信息
+	Login *Login
 }
 
 func NewClient(key uuid.UUID, c net.Conn) *Client {
@@ -29,9 +40,10 @@ func NewClient(key uuid.UUID, c net.Conn) *Client {
 		Conn:    c,
 		scanner: bufio.NewScanner(c),
 		writer:  bufio.NewWriter(c),
-		Input:   make(chan InReqMsg),
-		OutPut:  make(chan OutResMsg),
+		Input:   make(chan *InReqMsg),
+		OutPut:  make(chan *OutResMsg),
 		Quit:    make(chan *Client),
+		Login:   &Login{},
 	}
 	client.listen()
 	return client
@@ -50,7 +62,7 @@ func (c *Client) Close() {
 }
 
 func (c *Client) PutOut(resp *OutResMsg) {
-	c.OutPut <- *resp
+	c.OutPut <- resp
 }
 
 func (c *Client) read() {
@@ -62,7 +74,6 @@ func (c *Client) read() {
 				if length <= 0 {
 					return 0, nil, fmt.Errorf("length is 0")
 				}
-				logger.Logger.Infof("len_data %d; length: %d\n", len(data), length)
 				if int(length)+comm.HeadLen <= len(data) {
 					return int(length) + comm.HeadLen, data[:int(length)+comm.HeadLen], nil
 				}
@@ -76,7 +87,7 @@ func (c *Client) read() {
 				logger.Logger.Error("cmd err!!")
 			} else {
 				req.Client = c
-				c.Input <- *req
+				c.Input <- req
 			}
 		}
 

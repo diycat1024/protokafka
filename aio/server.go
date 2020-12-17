@@ -1,7 +1,6 @@
 package aio
 
 import (
-	"github.com/golang/protobuf/proto"
 	"github.com/google/uuid"
 	"m1/logger"
 	pb "m1/protos"
@@ -11,8 +10,8 @@ import (
 
 type LogicHandler interface {
 	HandlerCommon(msg *InReqMsg)
-	HandlerError(cmd pb.Cmd, msg *proto.Message)
-	HandlerResponse(cmd pb.Cmd, msg *proto.Message)
+	HandlerError(cmd pb.Cmd, data string)
+	HandlerResponse(msg *OutResMsg)
 }
 
 var LoginHandlerMap sync.Map
@@ -24,7 +23,7 @@ type server struct {
 	Listener   net.Listener
 	ClientJoin chan net.Conn
 	ClientQuit chan *Client
-	InputMsg   chan InReqMsg
+	InputMsg   chan *InReqMsg
 }
 
 func NewServer() *server {
@@ -33,7 +32,7 @@ func NewServer() *server {
 		Clients:    &sync.Map{},
 		ClientJoin: make(chan net.Conn),
 		ClientQuit: make(chan *Client),
-		InputMsg:   make(chan InReqMsg),
+		InputMsg:   make(chan *InReqMsg),
 	}
 	go s.listen()
 	return s
@@ -82,16 +81,17 @@ func (s *server) DelClient(key string) {
 	s.Clients.Delete(key)
 }
 
-func (s *server) RecvHandler(msg InReqMsg) {
+func (s *server) RecvHandler(msg *InReqMsg) {
+	msg.Server = s
+
 	logger.Logger.Debug("a msg recv")
 	h, b := LoginHandlerMap.Load(msg.Cmd)
 	if !b {
 		logger.Logger.Debugf("msg.cmd not register %d \n", msg.Cmd)
 		return
 	}
-	//todo have bug
-	handler := *h.(*LogicHandler)
-	handler.HandlerCommon(&msg)
+	handler := h.(LogicHandler)
+	handler.HandlerCommon(msg)
 }
 
 func (s *server) JoinHandler(conn net.Conn) {

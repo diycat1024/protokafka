@@ -8,6 +8,7 @@ import (
 
 type InReqMsg struct {
 	Client *Client
+	Server *server
 	Cmd    pb.Cmd
 	Data   []byte
 }
